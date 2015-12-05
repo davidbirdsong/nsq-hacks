@@ -150,14 +150,24 @@ func (p *GetPublisher) Publish(addr string, msg []byte) error {
 	if e = ffjson.Unmarshal(msg, msgB); e != nil {
 		return e
 	}
+	addr = fmt.Sprintf(addr, "")
+
 	if u, e = url.ParseRequestURI(msgB.Url); e != nil {
+		fmt.Printf("url -> %s\n", msgB.Url)
 		return e
 	}
-	u.Host = addr
+	var utmp *url.URL
+	if utmp, e = url.Parse(addr); e != nil {
+		fmt.Printf("err -> %s\n", e)
+	}
+
+	u.Host = utmp.Host
+	u.Scheme = utmp.Scheme
 
 	resp, err := HTTPGet(msgB.Host, u)
 	if err != nil {
-		return err
+		fmt.Printf("%s\n", err)
+		return nil
 	}
 	io.Copy(ioutil.Discard, resp.Body)
 	resp.Body.Close()
@@ -192,7 +202,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("nsq_to_http v%s\n", version.Binary)
+		fmt.Printf("dark_hwyv%s\n", version.Binary)
 		return
 	}
 
